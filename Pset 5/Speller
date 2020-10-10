@@ -1,0 +1,147 @@
+// Implements a dictionary's functionality
+//hash function is terrible. Super slow, but will do for now. Might update later
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include "dictionary.h"
+#include <string.h>
+#include <ctype.h>
+#include <strings.h>
+// Represents a node in a hash table
+typedef struct node
+{
+    char word[LENGTH + 1];
+    struct node *next;
+}
+node;
+node *newPtr;
+// Number of buckets in hash table
+const unsigned int N = 280;
+int numberWords = 0;
+// Hash table
+node *table[N];
+
+// Returns true if word is in dictionary else false
+bool check(const char *word)
+{
+    // TODO
+    //hashes word using hash function
+    int index = hash(word);
+    
+    for (node *temp = table[index]; temp != NULL; temp = temp -> next)
+    {
+        if (strcasecmp(temp->word, word) == 0)
+        {
+            return true;
+        }
+    
+    }
+    return false;
+}
+
+// Hashes word to a number
+//hash table is (super)slow might fix it later
+unsigned int hash(const char *word)
+{
+    char *x = NULL;
+    x = malloc(sizeof(char)*strlen(word) + 1);
+    int total = 0;
+    for (int i = 0; i < strlen(word); i++)
+    {
+        if (isupper(word[i]) != 0)
+        {
+            x[i] = tolower(word[i]);
+            total += x[i];
+        }
+        else
+        {
+            x[i] = word[i];
+            total += x[i];
+        }
+
+    }
+    
+
+    
+    free(x);
+    // TODO
+    
+    //return total % 280;
+    return total % 280;
+}
+
+// Loads dictionary into memory, returning true if successful else false
+bool load(const char *dictionary)
+{
+    //opens file dictionary to read
+    FILE* dictPtr = fopen(dictionary, "r");
+    //returns false if file fails to open
+    if (dictPtr == NULL)
+    {
+        return false;
+    }
+    char word[LENGTH + 1];
+ 
+    //iterates over each word in dictionary until end of file
+    while (fscanf(dictPtr, "%s", word) != EOF)
+    {
+        //declares index
+        int index;
+        //make new node for each word
+        newPtr = malloc(sizeof(node));
+        //returns false if it fails to allocate memory
+        if (newPtr == NULL)
+        {
+            return false;
+        }
+        //copies the word using strcpy into node
+        strcpy(newPtr->word, word);
+        //saves what index the word should be in, in index
+        index = hash(word);
+        //sets 'next' pointer in node = head of array (of pointers)
+        newPtr->next = table[index];
+        //sets head of array to new node
+        table[index] = newPtr;
+        //adds global variable numberWords by one for each
+        numberWords++;
+        
+        
+
+    }
+    
+    // TODO
+    fclose(dictPtr);
+    return true;
+}
+
+// Returns number of words in dictionary if loaded else 0 if not yet loaded
+unsigned int size(void)
+{
+    // TODO
+    return numberWords;
+}
+
+// Unloads dictionary from memory, returning true if successful else false
+bool unload(void)
+{
+    //for each node in table, starting at the back (so you dont lose access to the rest of the table), free
+    for (int i = 0; i < N ; i++)
+    {
+        //sets ptr equal to head of linked list
+        for (node *ptr = table[N - 1 - i]; ptr != NULL;)
+        {
+            node *temp = ptr;
+            ptr = ptr->next;
+            free(temp);
+            
+        }
+        
+        
+    }
+    
+    // TODO
+
+    return true;
+
+    
+}
